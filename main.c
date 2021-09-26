@@ -21,6 +21,7 @@ hargaSewa perhari
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define USERNAME "agus"
 #define PASSWORD "agus"
@@ -34,10 +35,21 @@ typedef struct {
     char id[MAX_ID];
     char namaBuku[MAX_NAMA];
     int hargaSewa;
+    int statusSewa; // 0 untuk avail, 1 untuk dipinjam
 } DATA_BUKU;
 
 DATA_BUKU listBuku[MAX_STRUCT];
 int banyakBuku = 0;
+
+void tampilSatuBuku(int i) {
+    printf("||%-5d||%-10s||%-40s||%-15d||", (i+1), listBuku[i].id, listBuku[i].namaBuku, listBuku[i].hargaSewa);
+
+    char statusSewa[MAX_NAMA] = "Avail";
+    if(listBuku[i].statusSewa == 1) {
+        strcpy(statusSewa, "Dipinjam");
+    }
+    printf("%-22s||\n", statusSewa);
+}
 
 void tampilListBuku() {
 
@@ -48,13 +60,13 @@ void tampilListBuku() {
 
     int i;
 
-    printf("================================================================================\n");
-    printf("||%-5s||%-10s||%-40s||%-15s||\n", "No", "ID", "Nama", "Harga");
-    printf("================================================================================\n");
+    printf("========================================================================================================\n");
+    printf("||%-5s||%-10s||%-40s||%-15s||%-22s||\n", "No", "ID", "Nama", "Harga", "Status Peminjaman");
+    printf("========================================================================================================\n");
     for(i = 0; i < banyakBuku; i++) {
-        printf("||%-5d||%-10s||%-40s||%-15d||\n", (i+1), listBuku[i].id, listBuku[i].namaBuku, listBuku[i].hargaSewa);
+        tampilSatuBuku(i);
     }
-    printf("================================================================================\n");
+    printf("========================================================================================================\n");
 }
 
 void pinjamBuku() {
@@ -71,15 +83,31 @@ void pinjamBuku() {
         printf("Pilih buku no : ");
         scanf("%d", &pilihBuku);
     } while(pilihBuku < 1 || pilihBuku > banyakBuku);
+
+    pilihBuku--;
+    char confirm;
+    do {
+        printf("Ingin meminjam buku dengan judul %s [Y/T]?", listBuku[pilihBuku].namaBuku);
+        fflush(stdin);
+        confirm = (char) toupper((char) getchar());
+
+        if(confirm == 'Y') {
+            printf("Selamat, anda berhasil meminjam buku %s\n", listBuku[pilihBuku].namaBuku);
+            listBuku[pilihBuku].statusSewa = 1; // buku sudah dipinjam
+        } else {
+            printf("Anda membatalkan peminjaman buku %s\n", listBuku[pilihBuku].namaBuku);
+        }
+
+
+    } while(confirm != 'Y' && confirm != 'T');
 }
 
 void init() {
     strcpy(listBuku[banyakBuku].id, "BK-01");
     strcpy(listBuku[banyakBuku].namaBuku, "Belajar Pemrograman JAVA");
     listBuku[banyakBuku].hargaSewa = 30000;
+    listBuku[banyakBuku].statusSewa = 0;
     banyakBuku++;
-
-
 }
 
 void menuUtama() {
@@ -99,6 +127,7 @@ void menuUtama() {
             tampilListBuku();
             break;
         case 2:
+            pinjamBuku();
             break;
         case 3:
             break;
