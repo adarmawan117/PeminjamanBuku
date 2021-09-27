@@ -3,9 +3,11 @@ Versi 2
 ===========
 27-September-2021
 ===========
-- Tambah Peminjam/Penyewa
-- Lihat list peminjam
+- Tambah Peminjam/Penyewa = DONE
+- Lihat list peminjam     = DONE
 - Mengembalikan buku
+- Logout                  = DONE
+- Update login agar bisa membatalkan login (exit program) = DONE
 
 
 DATA Peminjam
@@ -22,9 +24,9 @@ Versi 1
 26-September-2021
 ===========
 Peminjaman BUKU
-- Login
-- Tampil list buku
-- Pinjam Buku
+- Login              = DONE
+- Tampil list buku   = DONE
+- Pinjam Buku        = DONE
 
 DATA BUKU
 ----------
@@ -136,10 +138,59 @@ void tampilListPeminjam() {
     printf("==========================================================================================\n");
     printf("||%-5s||%-10s||%-40s||%-25s||\n", "No", "ID", "Nama", "Status Anggota");
     printf("==========================================================================================\n");
-    for(i = 0; i < banyakBuku; i++) {
+    for(i = 0; i < banyakPeminjam; i++) {
         tampilSatuPeminjam(i);
     }
     printf("==========================================================================================\n");
+}
+
+void tambahPeminjam() {
+    char id[MAX_ID];
+    char namaPeminjam[MAX_NAMA];
+
+    int panjangID;
+    do {
+        printf("Masukan ID Peminjam   : ");
+        fflush(stdin);
+        scanf("%[^\n]", listPeminjam[banyakPeminjam].id);
+
+        panjangID = strlen(listPeminjam[banyakPeminjam].id);
+
+        if(panjangID > MAX_ID) {
+            printf("Panjang ID tidak boleh lebih dari %d karakter\n", MAX_ID);
+        }
+
+    } while(panjangID > MAX_ID);
+
+    int panjangNama;
+    do {
+        printf("Masukan nama peminjam : ");
+        fflush(stdin);
+        scanf("%[^\n]", listPeminjam[banyakPeminjam].namaPeminjam);
+
+        panjangNama = strlen(listPeminjam[banyakPeminjam].namaPeminjam);
+
+        if(panjangNama > MAX_NAMA) {
+            printf("Panjang Nama tidak boleh lebih dari %d karakter\n", MAX_NAMA);
+        }
+
+    } while(panjangNama > MAX_NAMA);
+
+    char confirm;
+    do {
+        printf("Ingin menyimpan %s [Y/T] : ", listPeminjam[banyakPeminjam].namaPeminjam);
+        fflush(stdin);
+        confirm = (char) toupper((char) getchar());
+
+        if(confirm == 'Y') {
+            printf("Selamat, pelanggan \"%s\" berhasil ditambahkan\n", listPeminjam[banyakPeminjam].namaPeminjam);
+            banyakPeminjam++;
+        } else {
+            printf("Anda batal menambahkan pelanggan %s\n", listPeminjam[banyakPeminjam].namaPeminjam);
+        }
+
+
+    } while(confirm != 'Y' && confirm != 'T');
 }
 
 
@@ -206,7 +257,8 @@ void menuUtama() {
         printf("2. Pinjam Buku\n");
         printf("3. Tampil List Peminjam\n");
         printf("4. Tambah Peminjam\n");
-        printf("5. Keluar\n");
+        printf("5. Logout\n");
+        printf("6. Keluar\n");
         printf("Pilihan >> ");
         scanf("%d", &pilihan);
 
@@ -221,14 +273,20 @@ void menuUtama() {
             tampilListPeminjam();
             break;
         case 4:
-            //tambahPeminjam();
+            tambahPeminjam();
             break;
         case 5:
             break;
+        case 6:
+            break;
         default:
-            printf("Pilihan hanya dari 1 - 5 saja!\n");
+            printf("Pilihan hanya dari 1 - 6 saja!\n");
         }
     } while(pilihan != 5);
+
+    if(pilihan == 5) {
+        login();
+    } // selain itu keluar (exit) program
 }
 
 void login() {
@@ -236,13 +294,17 @@ void login() {
     char username[100];
     char password[100];
 
+    printf("\n\nMasukan 0 pada username dan password untuk membatalkan login\n\n");
+
     printf("Masukan username : ");
     scanf("%s", username);
 
     printf("Masukan password : ");
     scanf("%s", password);
 
-    if(strcmp(username, USERNAME) == 0 && strcmp(password, PASSWORD) == 0) {
+    if(strcmp(username, "0") == 0 && strcmp(password, "0") == 0) {
+        exit(0);
+    } else if(strcmp(username, USERNAME) == 0 && strcmp(password, PASSWORD) == 0) {
         printf("Selamat Datang %s\n", NAMA);
         menuUtama();
     } else {
