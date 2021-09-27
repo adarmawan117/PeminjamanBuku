@@ -1,6 +1,8 @@
 # depslib dependency file v1.0
-1632652568 source:h:\youtube\bahasac\peminjamanbuku\main.c
+1632724532 source:h:\youtube\bahasac\peminjamanbuku\main.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
+	<ctype.h>
+	<stdbool.h>
 

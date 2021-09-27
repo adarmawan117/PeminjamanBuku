@@ -1,4 +1,9 @@
 /**
+Versi 3
+===========
+- Koneksikan peminjaman dengan peminjam
+
+
 Versi 2
 ===========
 27-September-2021
@@ -43,6 +48,7 @@ statusSewa
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 #define USERNAME "agus"
 #define PASSWORD "agus"
@@ -61,7 +67,10 @@ typedef struct {
     char id[MAX_ID];
     char namaBuku[MAX_NAMA];
     int hargaSewa;
-    int statusSewa; // 0 untuk avail, 1 untuk dipinjam
+    /**
+    0 untuk avail, 1 untuk dipinjam
+    */
+    int statusSewa;
 } DATA_BUKU;
 
 typedef struct {
@@ -82,9 +91,16 @@ DATA_PEMINJAM listPeminjam[MAX_STRUCT];
 int banyakPeminjam = 0;
 
 
+/**
+Untuk mengecek apakah list buku masih kosong
+*/
+bool isEmptyBuku() {
+    return banyakBuku == 0;
+}
 
-
-
+bool isEmptyPeminjam() {
+    return banyakPeminjam == 0;
+}
 
 
 
@@ -100,7 +116,7 @@ void tampilSatuBuku(int i) {
 
 void tampilListBuku() {
 
-    if(banyakBuku == 0) {
+    if(isEmptyBuku()) {
         printf("Buku masih kosong!\n");
         return;
     }
@@ -129,7 +145,7 @@ void tampilSatuPeminjam(int i) {
 
 void tampilListPeminjam() {
 
-    if(banyakPeminjam == 0) {
+    if(isEmptyPeminjam()) {
         printf("Peminjam masih kosong!\n");
         return;
     }
@@ -194,9 +210,13 @@ void tambahPeminjam() {
 }
 
 
+
+
+
+
 void pinjamBuku() {
     // cek apakah ada buku yagn bisa dipinjam
-    if(banyakBuku == 0) {
+    if(isEmptyBuku()) {
         printf("Buku masih kosong!\n");
         return;
     }
@@ -227,6 +247,77 @@ void pinjamBuku() {
     } while(confirm != 'Y' && confirm != 'T');
 }
 
+int getJumlahBukuDipinjam() {
+    int i;
+    int jumlahBukuDipinjam = 0;
+    for(i = 0; i < banyakBuku; i++) {
+        // kalau bukunya dipinjam
+        if(listBuku[i].statusSewa == 1) {
+            jumlahBukuDipinjam++;
+        }
+    }
+
+    return jumlahBukuDipinjam;
+}
+
+void kembalikanBuku() {
+    if(isEmptyBuku()) {
+        printf("Buku masih kosong!\n");
+        return;
+    }
+
+
+    int jumlahBukuDipinjam = getJumlahBukuDipinjam();
+    if(jumlahBukuDipinjam == 0) {
+        printf("Tidak ada buku yang dipinjam!\n");
+        return;
+    }
+
+    int i;
+
+    printf("========================================================================================================\n");
+    printf("||%-5s||%-10s||%-40s||%-15s||%-22s||\n", "No", "ID", "Nama", "Harga", "Status Peminjaman");
+    printf("========================================================================================================\n");
+    for(i = 0; i < banyakBuku; i++) {
+        tampilSatuBuku(i);
+    }
+    printf("========================================================================================================\n");
+
+
+
+    // proses milih buku
+    int pilihBuku;
+
+    do {
+        printf("Pilih buku yang ingin dikembalikan : ");
+        scanf("%d", &pilihBuku);
+
+        pilihBuku--;
+        if(listBuku[pilihBuku].statusSewa != 1) {
+            printf("Harus memilih buku yang dipinjam!\n");
+        }
+
+    } while(listBuku[pilihBuku].statusSewa != 1 && (pilihBuku < 1 || pilihBuku > jumlahBukuDipinjam));
+
+    char confirm;
+    do {
+        printf("Ingin mengembalikan buku dengan judul %s [Y/T]?", listBuku[pilihBuku].namaBuku);
+        fflush(stdin);
+        confirm = (char) toupper((char) getchar());
+
+        if(confirm == 'Y') {
+            printf("Selamat, anda berhasil mengembalikan buku %s\n", listBuku[pilihBuku].namaBuku);
+            listBuku[pilihBuku].statusSewa = 0; // buku sudah dikembalikan
+        } else {
+            printf("Anda membatalkan pengembalian buku %s\n", listBuku[pilihBuku].namaBuku);
+        }
+
+
+    } while(confirm != 'Y' && confirm != 'T');
+}
+
+
+
 void initBuku() {
     strcpy(listBuku[banyakBuku].id, "BK-01");
     strcpy(listBuku[banyakBuku].namaBuku, "Belajar Pemrograman JAVA");
@@ -255,10 +346,11 @@ void menuUtama() {
         printf("MENU UTAMA\n");
         printf("1. Tampil List Buku\n");
         printf("2. Pinjam Buku\n");
-        printf("3. Tampil List Peminjam\n");
-        printf("4. Tambah Peminjam\n");
-        printf("5. Logout\n");
-        printf("6. Keluar\n");
+        printf("3. Kembalikan Buku\n");
+        printf("4. Tampil List Peminjam\n");
+        printf("5. Tambah Peminjam\n");
+        printf("6. Logout\n");
+        printf("7. Keluar\n");
         printf("Pilihan >> ");
         scanf("%d", &pilihan);
 
@@ -270,19 +362,22 @@ void menuUtama() {
             pinjamBuku();
             break;
         case 3:
-            tampilListPeminjam();
+            kembalikanBuku();
             break;
         case 4:
-            tambahPeminjam();
+            tampilListPeminjam();
             break;
         case 5:
+            tambahPeminjam();
             break;
         case 6:
             break;
+        case 7:
+            break;
         default:
-            printf("Pilihan hanya dari 1 - 6 saja!\n");
+            printf("Pilihan hanya dari 1 - 7 saja!\n");
         }
-    } while(pilihan != 5);
+    } while(pilihan != 6 && pilihan != 7);
 
     if(pilihan == 5) {
         login();
